@@ -126,6 +126,8 @@ void alphas(){
 	all("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Po210/root","SolarPo210");
 	all("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Po212/root","SolarPo212");
 	all("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Po214/root","SolarPo214");
+	all("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Be7full","SolarBe7");
+	all("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/PEPfull_2","SolarPep");
 }
 
 void all(string path,string name){
