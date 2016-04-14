@@ -718,7 +718,7 @@ void second(){
 			partFlag="Bi";
 			FillHistrograms(bi210FileList[i],energy_real,energy_real+0.1,Histrogram_nhits_bi,Histrogram_res_bi,Histrogram_RMS_bi);
 		  }
-		for( int i=0; i<bi212FileList.size(); i++ ){
+		for( int i=2; i<bi212FileList.size(); i++ ){
 			partFlag="Bi";
 			FillHistrograms(bi212FileList[i],energy_real,energy_real+0.1,Histrogram_nhits_bi,Histrogram_res_bi,Histrogram_RMS_bi);
 		  }
@@ -744,12 +744,12 @@ void second(){
 			partFlag="Po";
 			FillHistrograms(pureAlpha[i],energy_real,energy_real+0.1,Histrogram_nhits_po,Histrogram_res_po,Histrogram_RMS_po);
 		  }
-
+		
 
 			E[(int)energy]=(energy/10)+0.05;
 			error_E[(int)energy]=0;
-			
-			nhits_bi[(int)energy]=Histrogram_nhits_bi->GetMean();;
+		if(Histrogram_nhits_bi->GetEntries()>200 && Histrogram_nhits_po->GetEntries()>200  ){	
+			nhits_bi[(int)energy]=Histrogram_nhits_bi->GetMean();
 			error_nhits_bi[(int)energy]=Histrogram_nhits_bi->GetRMS();
 			nhits_po[(int)energy]=Histrogram_nhits_po->GetMean();
 			error_nhits_po[(int)energy]=Histrogram_nhits_po->GetRMS();
@@ -767,10 +767,43 @@ void second(){
 			Histrogram_nhits_po->GetXaxis()->SetTitle("nhits");
 			Histrogram_nhits_bi->SetTitle(("nhits_bi_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
 			Histrogram_nhits_po->SetTitle(("nhits_po_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
+
+			Double_t norm = Histrogram_nhits_bi->GetEntries();
+			Histrogram_nhits_bi->Scale(1/norm);
+			norm = Histrogram_nhits_po->GetEntries();
+			Histrogram_nhits_po->Scale(1/norm);
+
+			Histrogram_nhits_bi->Fit("gaus",0);
+			Histrogram_nhits_po->Fit("gaus",0);
+			TF1 *fit1 = (TF1*)Histrogram_nhits_bi->GetFunction("gaus");
+			TF1 *fit2 = (TF1*)Histrogram_nhits_po->GetFunction("gaus");
+			fit1->SetLineColor(kBlack);
+			fit2->SetLineColor(kBlack);
+
 			Histrogram_nhits_bi->Draw();
-			nhitsCan->Print(("plotChecker/bi/nhits_between_"+SSTR(energy_real)+"to"+SSTR(energy_real+0.1)+".png").c_str());
+			fit1->Draw("same");
+			nhitsCan->Print(("plotChecker/bi/"+SSTR(energy_real)+"_nhits_between_"+SSTR(energy_real)+"to"+SSTR(energy_real+0.1)+".png").c_str());
 			Histrogram_nhits_po->Draw();
-			nhitsCan->Print(("plotChecker/po/nhits_between_"+SSTR(energy_real)+"to"+SSTR(energy_real+0.1)+".png").c_str());
+			fit2->Draw("same");
+			nhitsCan->Print(("plotChecker/po/"+SSTR(energy_real)+"_nhits_between_"+SSTR(energy_real)+"to"+SSTR(energy_real+0.1)+".png").c_str());
+		}else{
+
+			nhits_bi[(int)energy]=0;
+			error_nhits_bi[(int)energy]=0;
+			nhits_po[(int)energy]=0;
+			error_nhits_po[(int)energy]=0;
+
+			res_bi[(int)energy]=0;;
+			error_res_bi[(int)energy]=0;
+			res_po[(int)energy]=0;
+			error_res_po[(int)energy]=0;
+			
+			RMS_bi[(int)energy]=0;
+			RMS_po[(int)energy]=0;
+			
+
+
+		}
 
 	//if (energy==0) Histrogram_nhits_bi->Draw();
        	//Histrogram_nhits_bi->Draw("same");
