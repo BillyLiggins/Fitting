@@ -26,25 +26,6 @@
 #include <TAxis.h>
 
 /* namespace util { */
-vector<string> glob( const string& path, const string& start )
-{
-  vector<string> result;
-  TSystemDirectory dir(path.c_str(), path.c_str());
-  TList *files = dir.GetListOfFiles();
-  if (files) {
-    TSystemFile *file;
-    TString fname;
-    TIter next(files);
-    while ((file=(TSystemFile*)next())) {
-      fname = file->GetName();
-      if (!file->IsDirectory() && fname.EndsWith(".root") && fname.BeginsWith( start ) ) {
-        stringstream fullPath; fullPath << path << "/" << fname.Data();
-        result.push_back(fullPath.str());
-      }
-    }
-  }
-  return result;
-}
 
 double mean( vector<double> v ){
 	double sum=0;
