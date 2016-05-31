@@ -1,3 +1,9 @@
+/*
+ *
+ * TODO:
+ * 	-You need to find the rejection and efficacies.
+ *
+ */
 #include <RAT/DU/DSReader.hh>
 #include <RAT/DS/Entry.hh>
 #include <RAT/DS/EV.hh>
@@ -107,35 +113,6 @@ double variance ( vector<double> v , double mean )
         return var = sum/(v.size() -2);
 }
 
-//void nhits3D(string filename,TH3D* plot){
-//	cout<<"filename : "<<filename<<endl;
-//
-//	TFile * file = TFile::Open(filename.c_str());
-//        TTree* Tree = (TTree*) file->Get("output");
-//	Double_t energy;
-//	Double_t energyReco;
-//        Int_t nhits, evIndex;
-//        Bool_t fitValid;
-//	Double_t scale=86./95;
-//
-//        Tree->SetBranchAddress("nhits",&nhits);
-//	Tree->SetBranchAddress("mcEdepQuenched",&energy);
-//	Tree->SetBranchAddress("energy",&energyReco);
-//        Tree->SetBranchAddress("fitValid",&fitValid);
-//        Tree->SetBranchAddress("evIndex",&evIndex);
-//        Int_t n = (Int_t)Tree->GetEntries();
-//
-//	for( Int_t iEntry = 0; iEntry < n; iEntry++ ){
-//			Tree->GetEntry(iEntry);
-//			if (fitValid !=0 && energyReco>0.2){
-//				plot->Fill(energy,energyReco,scale* 1/sqrt(nhits));
-//				if (evIndex>0){
-//				cout<<"Event number = "<<evIndex<<" in file = "<<filename<<endl;
-//				}
-//			}
-//	}
-//
-//
 
 void nhitsMod(string filename,TH2D* plot,Double_t scale){
 	cout<<"filename : "<<filename<<endl;
@@ -615,23 +592,17 @@ void spray(string biString,string poString){
 }
 
 
-void go(){
-	spray("/data/snoplus/OfficialProcessing/production_5_3_0/Bi212","/data/snoplus/OfficialProcessing/production_5_3_0/Po212");
-
-}
-
-
 //================================================================================================================
 
 
-void FillHistrograms(string filename,double E_low,double E_high,TH1D* hNhits,TH1D* hRes,TH1D* hRMS){
+void FillHistrograms(string filename,double E_low,double E_high,TH1D* hNhits,TH1D* hRes,TH1D* hRMS,TH1D* hDelta, TH1D * normal){
 	//cout<<"filename : "<<filename<<endl;
 
 	TFile * file = TFile::Open(filename.c_str());
         TTree* Tree = (TTree*) file->Get("output");
 	Double_t energy;
 	Double_t energyReco;
-	Double_t mcPosz;
+	Double_t mcPosz, mcPosr;
         Int_t nhits, evIndex;
         Bool_t fitValid;
         Int_t flag=0;
@@ -648,6 +619,7 @@ void FillHistrograms(string filename,double E_low,double E_high,TH1D* hNhits,TH1
         Tree->SetBranchAddress("fitValid",&fitValid);
         Tree->SetBranchAddress("evIndex",&evIndex);
         Tree->SetBranchAddress("mcPosz",&mcPosz);
+        Tree->SetBranchAddress("mcPosr",&mcPosr);
         Int_t n = (Int_t)Tree->GetEntries();
         //Int_t n = 9;
 
@@ -656,11 +628,12 @@ void FillHistrograms(string filename,double E_low,double E_high,TH1D* hNhits,TH1
 
 	for( Int_t iEntry = 0; iEntry < n; iEntry++ ){
 		Tree->GetEntry(iEntry);
-		if (fitValid !=0 && energyReco>0.2 && evIndex==0 && pdg1==flag && mcPosz<5000){// || pdg2==flag)){
+		if (fitValid !=0 && energyReco>0.2 && evIndex==0 && pdg1==flag && mcPosr<5000){// || pdg2==flag)){
 			if(E_low<energy && energy< E_high){
 				hNhits->Fill(nhits);
 				hRes->Fill(1/sqrt(nhits));
-				
+				hDelta->Fill(energy-energyReco);	
+				normal->Fill((energy-energyReco)/energy);
 			}
 		}
 	}
@@ -671,288 +644,334 @@ void FillHistrograms(string filename,double E_low,double E_high,TH1D* hNhits,TH1
 void second(){
 	//gStyle->SetOptStat(0);
 
-	int n=35;
-
-	vector<string> bi210FileList= glob("/data/snoplus/OfficialProcessing/production_5_3_0/Bi210","SolarBi210_r");
-	vector<string> po210FileList= glob("/data/snoplus/OfficialProcessing/production_5_3_0/Po210","SolarPo210_r");
-
-	vector<string> bi212FileList= glob("/data/snoplus/OfficialProcessing/production_5_3_0/Bi212","SolarBi212_r");
-	vector<string> po212FileList= glob("/data/snoplus/OfficialProcessing/production_5_3_0/Po212","SolarPo212_r");
-//	vector<string> bi212FileList= glob("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Bi212","SolarBi212_r");
-//	vector<string> po212FileList= glob("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Po212","SolarPo212_r");
-
-	vector<string> bi214FileList= glob("/data/snoplus/OfficialProcessing/production_5_3_0/Bi214","SolarBi214_r");
-	vector<string> po214FileList= glob("/data/snoplus/OfficialProcessing/production_5_3_0/Po214","SolarPo214_r");
-//	vector<string> bi214FileList= glob("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Bi214","SolarBi214_r");
-//	vector<string> po214FileList= glob("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Po214","SolarPo214_r");
+	int n=25;
 
 	vector<string> pureAlpha= glob("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha");
+	vector<string> pureElectron= glob("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron");
 
-	double E[n],nhits_bi[n],nhits_po[n],res_bi[n],res_po[n],RMS_bi[n],RMS_po[n];
-	double error_E[n],error_nhits_po[n],error_res_po[n],error_nhits_bi[n],error_res_bi[n];
+	double E[n],nhits_bi[n],nhits_po[n],res_bi[n],res_po[n],RMS_bi[n],RMS_po[n],delta_bi_RMS[n],delta_po_RMS[n],NormE_bi_RMS[n],NormE_po_RMS[n];
+	double error_E[n],error_nhits_po[n],error_res_po[n],error_nhits_bi[n],error_res_bi[n],RMS_bi_error[n],RMS_po_error[n],NormE_RMS_bi_error[n],NormE_RMS_po_error[n];
 
-	for (double energy=0;energy<35;energy++){
+	/* TCanvas* TotalCanvas = new TCanvas(); */
+	/* TCanvas* TotalCanvasPo = new TCanvas(); */
+	/* cout<<"before TCanvas "<<endl; */
+	TCanvas* TotalCanvas_deltaE = new TCanvas();
+	TCanvas* TotalCanvasPo_deltaE = new TCanvas();
+	/* cout<<"After TCanvas "<<endl; */
+
+	for (double energy=0;energy<25;energy++){
 		TH1D* Histrogram_nhits_bi  = new TH1D("Histrogram_nhits_bi","",2000,0,2000);
 		Histrogram_nhits_bi->SetLineColor(kBlue);Histrogram_nhits_bi->SetLineWidth(3);
-		//Histrogram_nhits_bi->SetLineColor(energy);Histrogram_nhits_bi->SetLineWidth(3);
 
 		TH1D* Histrogram_nhits_po  = new TH1D("Histrogram_nhits_po","",2000,0,2000);
-		Histrogram_nhits_po->SetLineColor(kRed);Histrogram_nhits_po->SetLineWidth(3);
+		Histrogram_nhits_po->SetLineColor(kRed);Histrogram_nhits_po->SetLineWidth(2);
 		
 		TH1D* Histrogram_res_bi  = new TH1D("Histrogram_res_bi","",20,0,2.);
-		Histrogram_res_bi->SetLineColor(kBlue);Histrogram_res_bi->SetLineWidth(3);
+		Histrogram_res_bi->SetLineColor(kBlue);Histrogram_res_bi->SetLineWidth(2);
 
 		TH1D* Histrogram_res_po  = new TH1D("Histrogram_res_po","",20,0,2);
-		Histrogram_res_po->SetLineColor(kRed);Histrogram_res_po->SetLineWidth(3);
+		Histrogram_res_po->SetLineColor(kRed);Histrogram_res_po->SetLineWidth(2);
 		
 		TH1D* Histrogram_RMS_bi  = new TH1D("Histrogram_RMS_bi","",20,0,2.);
-		Histrogram_res_bi->SetLineColor(kBlue);Histrogram_res_bi->SetLineWidth(3);
+		Histrogram_res_bi->SetLineColor(kBlue);Histrogram_res_bi->SetLineWidth(2);
 
 		TH1D* Histrogram_RMS_po  = new TH1D("Histrogram_RMS_po","",20,0,2);
-		Histrogram_res_po->SetLineColor(kRed);Histrogram_res_po->SetLineWidth(3);
+		Histrogram_res_po->SetLineColor(kRed);Histrogram_res_po->SetLineWidth(2);
+
+		TH1D* Histrogram_deltaE_bi  = new TH1D("Histrogram_deltaE_bi","",100,-0.4,0.4);
+		Histrogram_deltaE_bi->SetLineColor(kBlue);Histrogram_deltaE_bi->SetLineWidth(2);
+
+		TH1D* Histrogram_deltaE_po  = new TH1D("Histrogram_deltaE_po","",100,-0.4,0.4);
+		Histrogram_deltaE_po->SetLineColor(kRed);Histrogram_deltaE_po->SetLineWidth(2);
+
+		TH1D* Histrogram_NormE_bi  = new TH1D("Histrogram_NormE_bi","",100,-0.4,0.4);
+		Histrogram_NormE_bi->SetLineColor(kBlue);Histrogram_NormE_bi->SetLineWidth(2);
+
+		TH1D* Histrogram_NormE_po  = new TH1D("Histrogram_NormE_po","",100,-0.4,0.4);
+		Histrogram_NormE_po->SetLineColor(kRed);Histrogram_NormE_po->SetLineWidth(2);
 
 		double energy_real= energy/10;
 
-		for( int i=0; i<bi210FileList.size(); i++ ){
-		//for( int i=0; i<5; i++ ){
+		for( int i=0; i<pureElectron.size(); i++ ){
 			partFlag="Bi";
-			FillHistrograms(bi210FileList[i],energy_real,energy_real+0.1,Histrogram_nhits_bi,Histrogram_res_bi,Histrogram_RMS_bi);
-		  }
-		for( int i=2; i<bi212FileList.size(); i++ ){
-			partFlag="Bi";
-			FillHistrograms(bi212FileList[i],energy_real,energy_real+0.1,Histrogram_nhits_bi,Histrogram_res_bi,Histrogram_RMS_bi);
-		  }
-		for( int i=0; i<bi214FileList.size(); i++ ){
-			partFlag="Bi";
-			FillHistrograms(bi214FileList[i],energy_real,energy_real+0.1,Histrogram_nhits_bi,Histrogram_res_bi,Histrogram_RMS_bi);
-		  }
-
-		//for( int i=0; i<po210FileList.size(); i++ ){
-		for( int i=0; i<5; i++ ){
-			partFlag="Po";
-			FillHistrograms(po210FileList[i],energy_real,energy_real+0.1,Histrogram_nhits_po,Histrogram_res_po,Histrogram_RMS_po);
-		  }
-		for( int i=0; i<po212FileList.size(); i++ ){
-			partFlag="Po";
-			FillHistrograms(po212FileList[i],energy_real,energy_real+0.1,Histrogram_nhits_po,Histrogram_res_po,Histrogram_RMS_po);
-		  }
-		for( int i=0; i<po214FileList.size(); i++ ){
-			partFlag="Po";
-			FillHistrograms(po214FileList[i],energy_real,energy_real+0.1,Histrogram_nhits_po,Histrogram_res_po,Histrogram_RMS_po);
-		  }
-		for( int i=0; i<pureAlpha.size(); i++ ){
-			partFlag="Po";
-			FillHistrograms(pureAlpha[i],energy_real,energy_real+0.1,Histrogram_nhits_po,Histrogram_res_po,Histrogram_RMS_po);
+			FillHistrograms(pureElectron[i],energy_real,energy_real+0.1,Histrogram_nhits_bi,Histrogram_res_bi,Histrogram_RMS_bi,Histrogram_deltaE_bi,Histrogram_NormE_po);
 		  }
 		
+		for( int i=0; i<pureAlpha.size(); i++ ){
+			partFlag="Po";
+			FillHistrograms(pureAlpha[i],energy_real,energy_real+0.1,Histrogram_nhits_po,Histrogram_res_po,Histrogram_RMS_po,Histrogram_deltaE_po,Histrogram_NormE_bi);
+		  }
 
 			E[(int)energy]=(energy/10)+0.05;
 			error_E[(int)energy]=0;
-		if(Histrogram_nhits_bi->GetEntries()>200 && Histrogram_nhits_po->GetEntries()>200  ){	
-			nhits_bi[(int)energy]=Histrogram_nhits_bi->GetMean();
-			error_nhits_bi[(int)energy]=Histrogram_nhits_bi->GetRMS();
-			nhits_po[(int)energy]=Histrogram_nhits_po->GetMean();
-			error_nhits_po[(int)energy]=Histrogram_nhits_po->GetRMS();
 
-			res_bi[(int)energy]=Histrogram_res_bi->GetMean();;
-			error_res_bi[(int)energy]=Histrogram_res_bi->GetRMS();
-			res_po[(int)energy]=Histrogram_res_po->GetMean();
-			error_res_po[(int)energy]=Histrogram_res_po->GetRMS();
+		/* if(Histrogram_nhits_bi->GetEntries()>200 && Histrogram_nhits_po->GetEntries()>200  ){ */	
+
+		/* 	nhits_bi[(int)energy]=Histrogram_nhits_bi->GetMean(); */
+		/* 	error_nhits_bi[(int)energy]=Histrogram_nhits_bi->GetRMS(); */
+		/* 	nhits_po[(int)energy]=Histrogram_nhits_po->GetMean(); */
+		/* 	error_nhits_po[(int)energy]=Histrogram_nhits_po->GetRMS(); */
+
+		/* 	res_bi[(int)energy]=Histrogram_res_bi->GetMean(); */
+		/* 	error_res_bi[(int)energy]=Histrogram_res_bi->GetRMS(); */
+		/* 	res_po[(int)energy]=Histrogram_res_po->GetMean(); */
+		/* 	error_res_po[(int)energy]=Histrogram_res_po->GetRMS(); */
 			
-			RMS_bi[(int)energy]=Histrogram_nhits_bi->GetRMS();
-			RMS_po[(int)energy]=Histrogram_nhits_po->GetRMS();
 
-			TCanvas* nhitsCan= new TCanvas();
-			Histrogram_nhits_bi->GetXaxis()->SetTitle("nhits");
-			Histrogram_nhits_po->GetXaxis()->SetTitle("nhits");
-			Histrogram_nhits_bi->SetTitle(("nhits_bi_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
-			Histrogram_nhits_po->SetTitle(("nhits_po_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
+		/* 	TCanvas* nhitsCan= new TCanvas(); */
+		/* 	Histrogram_nhits_bi->GetXaxis()->SetTitle("nhits"); */
+		/* 	Histrogram_nhits_po->GetXaxis()->SetTitle("nhits"); */
+		/* 	Histrogram_nhits_bi->SetTitle(("nhits_bi_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str()); */
+		/* 	Histrogram_nhits_po->SetTitle(("nhits_po_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str()); */
 
-			Double_t norm = Histrogram_nhits_bi->GetEntries();
-			Histrogram_nhits_bi->Scale(1/norm);
-			norm = Histrogram_nhits_po->GetEntries();
-			Histrogram_nhits_po->Scale(1/norm);
+		/* 	Double_t norm = Histrogram_nhits_bi->GetEntries(); */
+		/* 	Histrogram_nhits_bi->Scale(1/norm); */
+		/* 	norm = Histrogram_nhits_po->GetEntries(); */
+		/* 	Histrogram_nhits_po->Scale(1/norm); */
 
-			Histrogram_nhits_bi->Fit("gaus",0);
-			Histrogram_nhits_po->Fit("gaus",0);
-			TF1 *fit1 = (TF1*)Histrogram_nhits_bi->GetFunction("gaus");
-			TF1 *fit2 = (TF1*)Histrogram_nhits_po->GetFunction("gaus");
+		/* 	Histrogram_nhits_bi->Fit("gaus"); */
+		/* 	Histrogram_nhits_po->Fit("gaus"); */
+		/* 	TF1 *fit1 = (TF1*)Histrogram_nhits_bi->GetFunction("gaus"); */
+		/* 	TF1 *fit2 = (TF1*)Histrogram_nhits_po->GetFunction("gaus"); */
+		/* 	fit1->SetLineColor(kBlack); */
+		/* 	fit2->SetLineColor(kBlack); */
+
+		/* 	TCanvas* checkerCanvas = new TCanvas(); */
+		/* 	Histrogram_nhits_bi->Draw(); */
+		/* 	fit1->Draw("same"); */
+		/* 	nhitsCan->Print(("plotChecker/bi/nhits_between_"+SSTR(energy_real)+"to"+SSTR(energy_real+0.1)+".png").c_str()); */
+		/* 	Histrogram_nhits_po->Draw(); */
+		/* 	fit2->Draw("same"); */
+		/* 	nhitsCan->Print(("plotChecker/po/nhits_between_"+SSTR(energy_real)+"to"+SSTR(energy_real+0.1)+".png").c_str()); */
+
+		/* 	TotalCanvas->cd(); */
+		/* 	if (energy==0) Histrogram_nhits_bi->Draw(); */
+		/* 	Histrogram_nhits_bi->Draw("same"); */
+
+		/* 	TotalCanvasPo->cd(); */
+		/* 	if (energy==0) Histrogram_nhits_po->Draw(); */
+		/* 	Histrogram_nhits_po->Draw("same"); */
+		/* }else{ */
+		/* 	nhits_bi[(int)energy]=0; */
+		/* 	error_nhits_bi[(int)energy]=0; */
+		/* 	nhits_po[(int)energy]=0; */
+		/* 	error_nhits_po[(int)energy]=0; */
+
+		/* 	res_bi[(int)energy]=0;; */
+		/* 	error_res_bi[(int)energy]=0; */
+		/* 	res_po[(int)energy]=0; */
+		/* 	error_res_po[(int)energy]=0; */
+			
+		/* 	RMS_bi[(int)energy]=0; */
+		/* 	RMS_po[(int)energy]=0; */
+		/* } */
+
+		bool first=true;
+		if(Histrogram_nhits_bi->GetEntries()>200 && Histrogram_nhits_po->GetEntries()>200  ){	
+
+			Histrogram_deltaE_bi->GetXaxis()->SetTitle("#Delta E");
+			Histrogram_deltaE_po->GetXaxis()->SetTitle("#Delta E");
+			Histrogram_deltaE_bi->SetTitle(("deltaE_bi_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
+			Histrogram_deltaE_po->SetTitle(("deltaE_po_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
+
+			Histrogram_deltaE_bi->Sumw2();
+			Histrogram_deltaE_po->Sumw2();
+			Double_t norm = Histrogram_deltaE_bi->GetEntries();
+			Histrogram_deltaE_bi->Scale(1/norm);
+			norm = Histrogram_deltaE_po->GetEntries();
+			Histrogram_deltaE_po->Scale(1/norm);
+
+			Histrogram_deltaE_bi->Fit("gaus");
+			Histrogram_deltaE_po->Fit("gaus");
+
+			TF1 *fit1 = (TF1*)Histrogram_deltaE_bi->GetFunction("gaus");
+			TF1 *fit2 = (TF1*)Histrogram_deltaE_po->GetFunction("gaus");
 			fit1->SetLineColor(kBlack);
 			fit2->SetLineColor(kBlack);
 
-			Histrogram_nhits_bi->Draw();
-			fit1->Draw("same");
-			nhitsCan->Print(("plotChecker/bi/"+SSTR(energy_real)+"_nhits_between_"+SSTR(energy_real)+"to"+SSTR(energy_real+0.1)+".png").c_str());
-			Histrogram_nhits_po->Draw();
-			fit2->Draw("same");
-			nhitsCan->Print(("plotChecker/po/"+SSTR(energy_real)+"_nhits_between_"+SSTR(energy_real)+"to"+SSTR(energy_real+0.1)+".png").c_str());
+			if (false){
+				TCanvas* checkerCanvas = new TCanvas();
+				Histrogram_deltaE_bi->Draw();
+				fit1->Draw("same");
+				checkerCanvas->Print(("plotChecker/bi/DeltaE_between_"+SSTR(energy_real)+"0_to"+SSTR(energy_real+0.1)+".png").c_str());
+
+				TCanvas* checkerCanvas_2= new TCanvas();
+				Histrogram_deltaE_po->Draw();
+				fit2->Draw("same");
+				checkerCanvas_2->Print(("plotChecker/po/DeltaE_between_"+SSTR(energy_real)+"0_to"+SSTR(energy_real+0.1)+".png").c_str());
+			}
+
+			RMS_bi[(int)energy]=fit1->GetParameter(2);
+			RMS_po[(int)energy]=fit2->GetParameter(2);
+			RMS_bi_error[(int)energy]=fit1->GetParError(2);
+			RMS_po_error[(int)energy]=fit2->GetParError(2);
+
+			if(false){
+				//This is to compute the all on one plots.
+				TotalCanvas_deltaE->cd();
+				if (first=true) Histrogram_deltaE_bi->Draw();
+				Histrogram_deltaE_bi->Draw("same");
+
+				TotalCanvasPo_deltaE->cd();
+				if (first=true) Histrogram_deltaE_po->Draw();
+				Histrogram_deltaE_po->Draw("same");
+				first=false;
+			}
+		
+//+++++++++++++++++++++++++NormE++++++++++++++++++++++++++++
+
+
+			Histrogram_NormE_bi->GetXaxis()->SetTitle("#Delta E");
+			Histrogram_NormE_po->GetXaxis()->SetTitle("#Delta E/E_{MC}");
+			Histrogram_NormE_bi->SetTitle(("NormE_bi_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
+			Histrogram_NormE_po->SetTitle(("NormE_po_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
+
+			Histrogram_NormE_bi->Sumw2();
+			Histrogram_NormE_po->Sumw2();
+			norm = Histrogram_NormE_bi->GetEntries();
+			Histrogram_NormE_bi->Scale(1/norm);
+			norm = Histrogram_NormE_po->GetEntries();
+			Histrogram_NormE_po->Scale(1/norm);
+
+			Histrogram_NormE_bi->Fit("gaus");
+			Histrogram_NormE_po->Fit("gaus");
+
+			fit1 = (TF1*)Histrogram_NormE_bi->GetFunction("gaus");
+			fit2 = (TF1*)Histrogram_NormE_po->GetFunction("gaus");
+			fit1->SetLineColor(kBlack);
+			fit2->SetLineColor(kBlack);
+
+			if (false){
+				TCanvas* checkerCanvas = new TCanvas();
+				Histrogram_NormE_bi->Draw();
+				fit1->Draw("same");
+				checkerCanvas->Print(("plotChecker/bi/NormE_between_"+SSTR(energy_real)+"0_to"+SSTR(energy_real+0.1)+".png").c_str());
+
+				TCanvas* checkerCanvas_2= new TCanvas();
+				Histrogram_NormE_po->Draw();
+				fit2->Draw("same");
+				checkerCanvas_2->Print(("plotChecker/po/NormE_between_"+SSTR(energy_real)+"0_to"+SSTR(energy_real+0.1)+".png").c_str());
+			}
+
+			NormE_bi_RMS[(int)energy]=fit1->GetParameter(2);
+			NormE_po_RMS[(int)energy]=fit2->GetParameter(2);
+			NormE_RMS_bi_error[(int)energy]=fit1->GetParError(2);
+			NormE_RMS_po_error[(int)energy]=fit2->GetParError(2);
+
 		}else{
-
-			nhits_bi[(int)energy]=0;
-			error_nhits_bi[(int)energy]=0;
-			nhits_po[(int)energy]=0;
-			error_nhits_po[(int)energy]=0;
-
-			res_bi[(int)energy]=0;;
-			error_res_bi[(int)energy]=0;
-			res_po[(int)energy]=0;
-			error_res_po[(int)energy]=0;
-			
 			RMS_bi[(int)energy]=0;
 			RMS_po[(int)energy]=0;
+			RMS_bi_error[(int)energy]=0;
+			RMS_po_error[(int)energy]=0;
 			
-
-
+			NormE_bi_RMS[(int)energy]=0;
+			NormE_po_RMS[(int)energy]=0;
+			NormE_RMS_bi_error[(int)energy]=0;
+			NormE_RMS_po_error[(int)energy]=0;
 		}
-
-	//if (energy==0) Histrogram_nhits_bi->Draw();
-       	//Histrogram_nhits_bi->Draw("same");
-        //Histrogram_res_bi->Draw();
 	
-	cout<<"This is the mean nhits for Bi = "<<Histrogram_nhits_bi->GetMean()<<endl;
-	cout<<"This is the mean nhits for Po = "<<Histrogram_nhits_po->GetMean()<<endl;
-
-	cout<<"This is the RMS for Bi = "<<RMS_bi[(int)energy]<<endl;
-	cout<<"This is the RMS for Po = "<<RMS_po[(int)energy]<<endl;
 	}
 
-        TCanvas* error= new TCanvas();
-	TMultiGraph *mg = new TMultiGraph();
-	error->cd();
-        TGraphErrors * gr_nhits_bi =new TGraphErrors(n,E,nhits_bi,error_E,error_nhits_bi);
-	gr_nhits_bi ->SetMarkerColor(kBlue);
-	gr_nhits_bi->SetLineColor(kBlue);
-	gr_nhits_bi->SetFillColor(kBlue);
-        mg->Add(gr_nhits_bi);
-
-        TGraphErrors * gr_nhits_po =new TGraphErrors(n,E,nhits_po,error_E,error_nhits_po);
-	gr_nhits_po ->SetMarkerColor(kRed);
-	gr_nhits_po->SetLineColor(kRed);
-	gr_nhits_po->SetFillColor(kRed);
-        mg->Add(gr_nhits_po);
-
-//        TGraphErrors * gr2 =new TGraphErrors(n,E,nhitspo2,eEpo,enhitspo);
-//	gr2->SetMarkerColor(kBlack);
-//	gr2->SetLineColor(kBlack);
-//	gr2->SetFillColor(kBlack);
-//        mg->Add(gr2);
+	/* TotalCanvas->Print("All_electrons_nhits.png"); */
+	/* TotalCanvasPo->Print("All_alpha_nhits.png"); */
+	/* TotalCanvas_deltaE->Print("All_electrons_deltaE.png"); */
+	/* TotalCanvasPo_deltaE->Print("All_alpha_deltaE.png"); */
 
 
-	mg->Draw("ap");
-//        mg->GetXaxis()->SetRangeUser(0.0,3.5);
-//        mg->GetYaxis()->SetRangeUser(0.0,800);
-	mg->SetTitle("Mean nhits across energy");
-        mg->GetXaxis()->SetTitle("Energy MC (MeV)");
-       	mg->GetYaxis()->SetTitle("nhits");
+//=========================NhitVsEnergy==============================
+	//        /* TCanvas* error= new TCanvas(); */
+	/* TMultiGraph *mg = new TMultiGraph(); */
+	/* error->cd(); */
+        /* TGraphErrors * gr_nhits_bi =new TGraphErrors(n,E,nhits_bi,error_E,error_nhits_bi); */
+	/* gr_nhits_bi ->SetMarkerColor(kBlue); */
+	/* gr_nhits_bi->SetLineColor(kBlue); */
+	/* gr_nhits_bi->SetFillColor(kBlue); */
+        /* mg->Add(gr_nhits_bi); */
 
-	TLegend * errorLeg = new TLegend(0.7,0.7,0.9,0.9);
-	errorLeg->AddEntry(gr_nhits_bi,"Bi","f");
-	errorLeg->AddEntry(gr_nhits_po,"Po","f");
-	//errorLeg->AddEntry(gr2,"Scaled Po","f");
-	errorLeg->Draw();
+        /* TGraphErrors * gr_nhits_po =new TGraphErrors(n,E,nhits_po,error_E,error_nhits_po); */
+	/* gr_nhits_po ->SetMarkerColor(kRed); */
+	/* gr_nhits_po->SetLineColor(kRed); */
+	/* gr_nhits_po->SetFillColor(kRed); */
+        /* mg->Add(gr_nhits_po); */
 
-	error->Print("NhitsVsEnergy.png");
+	/* mg->Draw("ap"); */
+/* //        mg->GetXaxis()->SetRangeUser(0.0,3.5); */
+/* //        mg->GetYaxis()->SetRangeUser(0.0,800); */
+	/* mg->SetTitle("Mean nhits across energy"); */
+        /* mg->GetXaxis()->SetTitle("Energy MC (MeV)"); */
+       	/* mg->GetYaxis()->SetTitle("nhits"); */
 
-//=================================================================================================
+	/* TLegend * errorLeg = new TLegend(0.7,0.7,0.9,0.9); */
+	/* errorLeg->AddEntry(gr_nhits_bi,"Beta","f"); */
+	/* errorLeg->AddEntry(gr_nhits_po,"Alpha","f"); */
+	/* //errorLeg->AddEntry(gr2,"Scaled Po","f"); */
+	/* errorLeg->Draw(); */
 
-        TCanvas* resCan= new TCanvas();
-	TMultiGraph *mg_res = new TMultiGraph();
-	resCan->cd();
-        TGraphErrors * gr_res_bi =new TGraphErrors(n,E,res_bi,error_E,error_res_bi);
-	gr_res_bi ->SetMarkerColor(kBlue);
-	gr_res_bi->SetLineColor(kBlue);
-	gr_res_bi->SetFillColor(kBlue);
-        mg_res->Add(gr_res_bi);
+	/* error->Print("NhitsVsEnergy.png"); */
 
-        TGraphErrors * gr_res_po =new TGraphErrors(n,E,res_po,error_E,error_res_po);
-	gr_res_po ->SetMarkerColor(kRed);
-	gr_res_po->SetLineColor(kRed);
-	gr_res_po->SetFillColor(kRed);
-        mg_res->Add(gr_res_po);
-
-//        TGraphErrors * gr2 =new TGraphErrors(n,E,nhitspo2,eEpo,enhitspo);
-//	gr2->SetMarkerColor(kBlack);
-//	gr2->SetLineColor(kBlack);
-//	gr2->SetFillColor(kBlack);
-//        mg->Add(gr2);
-
-
-	mg_res->Draw("ap");
-//        mg_res->GetXaxis()->SetRangeUser(0.0,3.5);
-//        mg_res->GetYaxis()->SetRangeUser(0.0,0.12);
-	mg_res->SetTitle("Resolution across energy");
-        mg_res->GetXaxis()->SetTitle("Energy MC (MeV)");
-       	mg_res->GetYaxis()->SetTitle("1/sqrt(nhits)");
-
-	TLegend * resLeg = new TLegend(0.7,0.7,0.9,0.9);
-	resLeg->AddEntry(gr_res_bi,"Bi","f");
-	resLeg->AddEntry(gr_res_po,"Po","f");
-	//errorLeg->AddEntry(gr2,"Scaled Po","f");
-	resLeg->Draw();
-
-	resCan->Print("ResVsEnergy.png");
 //==============RMS===================================================================================
 
         TCanvas* RMSCan= new TCanvas();
 	TMultiGraph *mg_RMS = new TMultiGraph();
 	RMSCan->cd();
-        TGraphErrors * gr_RMS_bi =new TGraphErrors(n,E,RMS_bi,error_E,error_E);
+        TGraphErrors * gr_RMS_bi =new TGraphErrors(n,E,RMS_bi,error_E,RMS_bi_error);
 	gr_RMS_bi ->SetMarkerColor(kBlue);
 	gr_RMS_bi->SetLineColor(kBlue);
 	gr_RMS_bi->SetFillColor(kBlue);
         mg_RMS->Add(gr_RMS_bi);
 
-        TGraphErrors * gr_RMS_po =new TGraphErrors(n,E,RMS_po,error_E,error_E);
+        TGraphErrors * gr_RMS_po =new TGraphErrors(n,E,RMS_po,error_E,RMS_po_error);
 	gr_RMS_po ->SetMarkerColor(kRed);
 	gr_RMS_po->SetLineColor(kRed);
 	gr_RMS_po->SetFillColor(kRed);
         mg_RMS->Add(gr_RMS_po);
 
-//        TGraphErrors * gr2 =new TGraphErrors(n,E,nhitspo2,eEpo,enhitspo);
-//	gr2->SetMarkerColor(kBlack);
-//	gr2->SetLineColor(kBlack);
-//	gr2->SetFillColor(kBlack);
-//        mg->Add(gr2);
-
 
 	mg_RMS->Draw("a*");
 //        mg_res->GetXaxis()->SetRangeUser(0.0,3.5);
 //        mg_res->GetYaxis()->SetRangeUser(0.0,0.12);
-	mg_RMS->SetTitle("nhits RMS across energy");
+	mg_RMS->SetTitle("#Delta E RMS across energy");
         mg_RMS->GetXaxis()->SetTitle("Energy MC (MeV)");
-       	mg_RMS->GetYaxis()->SetTitle("nhits RMS");
+       	mg_RMS->GetYaxis()->SetTitle("#Delta E RMS");
 
 	TLegend * RMSLeg = new TLegend(0.7,0.7,0.9,0.9);
-	RMSLeg->AddEntry(gr_RMS_bi,"Bi","f");
-	RMSLeg->AddEntry(gr_RMS_po,"Po","f");
+	RMSLeg->AddEntry(gr_RMS_bi,"Beta","f");
+	RMSLeg->AddEntry(gr_RMS_po,"Alpha","f");
 	//errorLeg->AddEntry(gr2,"Scaled Po","f");
 	RMSLeg->Draw();
 
-	RMSCan->Print("RMSVsEnergy.png");
+	RMSCan->Print("deltaE_RMSVsEnergy.png");
 	
-}
+//==============NormRMS===================================================================================
+
+        TCanvas* NormRMSCan= new TCanvas();
+	TMultiGraph *mg_NormE_RMS = new TMultiGraph();
+	NormRMSCan->cd();
+        TGraphErrors * gr_NormE_RMS_bi =new TGraphErrors(n,E,NormE_bi_RMS,error_E,NormE_RMS_bi_error);
+	gr_NormE_RMS_bi ->SetMarkerColor(kBlue);
+	gr_NormE_RMS_bi->SetLineColor(kBlue);
+	gr_NormE_RMS_bi->SetFillColor(kBlue);
+        mg_NormE_RMS->Add(gr_NormE_RMS_bi);
+
+        TGraphErrors * gr_NormE_RMS_po =new TGraphErrors(n,E,NormE_po_RMS,error_E,NormE_RMS_po_error);
+	gr_NormE_RMS_po ->SetMarkerColor(kRed);
+	gr_NormE_RMS_po->SetLineColor(kRed);
+	gr_NormE_RMS_po->SetFillColor(kRed);
+        mg_NormE_RMS->Add(gr_NormE_RMS_po);
 
 
+	mg_NormE_RMS->Draw("a*");
+//        mg_res->GetXaxis()->SetRangeUser(0.0,3.5);
+//        mg_res->GetYaxis()->SetRangeUser(0.0,0.12);
+	mg_NormE_RMS->SetTitle("#Delta E/E_{MC} RMS across energy");
+        mg_NormE_RMS->GetXaxis()->SetTitle("Energy MC (MeV)");
+       	mg_NormE_RMS->GetYaxis()->SetTitle("#Delta E/E_{MC} RMS");
 
-void looper(){
-	/*This function is built to make a vector of TH1Ds and fill them with the res of the alphas in the files alphaSims/output*/
+	TLegend * NormE_RMSLeg = new TLegend(0.7,0.7,0.9,0.9);
+	NormE_RMSLeg->AddEntry(gr_NormE_RMS_bi,"Beta","f");
+	NormE_RMSLeg->AddEntry(gr_NormE_RMS_po,"Alpha","f");
+	//errorLeg->AddEntry(gr2,"Scaled Po","f");
+	NormE_RMSLeg->Draw();
 
-	gStyle->SetOptStat(0);
-
-	vector<string> alphaFileList = glob("alphaSims/output","");
-	//vector<string> po214FileList= glob("/data/snoplus/OfficialProcessing/production_5_3_0/Po214","SolarPo214_r");
-	for( int i =0; i < alphaFileList.size();i++){
-	
-		cout<< "The "<< i<< "th element is "<<alphaFileList[i]<<endl;
-	}
-	vector<TH2D*> aHistList;
-	for( int i =0; i < alphaFileList.size();i++){
-	
-	aHistList.push_back(new TH2D(SSTR(i).c_str(),"",100,0,3.5,100,0,0.2));
-	aHistList[i]->SetMarkerColor(i);aHistList[i]->SetFillColor(i);aHistList[i]->SetLineColor(i);
-	nhitsMod( alphaFileList[i],aHistList[i]);
-	aHistList[i]->Draw();
-	}
-
-
+	NormRMSCan->Print("NormE_RMSVsEnergy.png");
 }
