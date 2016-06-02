@@ -182,7 +182,7 @@ void FillHist(string filename,TH2D* hDeltaE, TH2D * hNormE){
 	
 /* } */
 
-void second(){
+int main(){
 	//gStyle->SetOptStat(0);
 
 	int n=25;
@@ -447,4 +447,5 @@ void second(){
 	NormE_RMSLeg->Draw();
 
 	NormRMSCan->Print("NormE_RMSVsEnergy.png");
+	return 0;
 }
