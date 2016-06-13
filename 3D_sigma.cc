@@ -213,16 +213,17 @@ int main(){
 			       	Histrogram_NormE_bi->GetYaxis()->FindBin(radius),Histrogram_NormE_bi->GetYaxis()->FindBin(radius+1000));
 		TH1D *slicedPo_normE = Histrogram_NormE_po->ProjectionZ("slicedPo_normE", Histrogram_NormE_po->GetXaxis()->FindBin(energy_real),Histrogram_NormE_po->GetXaxis()->FindBin(energy_real+0.1),\
 			       	Histrogram_NormE_po->GetYaxis()->FindBin(radius),Histrogram_NormE_po->GetYaxis()->FindBin(radius+1000));
-		 slicedBi_deltaE->SetDefaultSumw2(false);
-		 slicedPo_deltaE->SetDefaultSumw2(false);
-		 slicedBi_normE->SetDefaultSumw2(false);
-		 slicedPo_normE->SetDefaultSumw2(false);
+		/* TH1::SetDefaultSumw2(false); */
+		 slicedBi_deltaE->SetDefaultSumw2(true);
+		 slicedPo_deltaE->SetDefaultSumw2(true);
+		 slicedBi_normE->SetDefaultSumw2(true);
+		 slicedPo_normE->SetDefaultSumw2(true);
 
 		bool first=true;
-		if(energy==0 && radius==0){
-			slicedBi_deltaE->Sumw2();
-			slicedPo_deltaE->Sumw2();
-		}
+		/* if(energy==0 && radius==0){ */
+		/* 	slicedBi_deltaE->Sumw2(); */
+		/* 	slicedPo_deltaE->Sumw2(); */
+		/* } */
 
 		if(slicedBi_normE->GetEntries()>200 && slicedPo_normE->GetEntries()>200  ){	
 
@@ -279,10 +280,10 @@ int main(){
 
 
 
-			if(energy==0 && radius==0){
-				slicedBi_normE->Sumw2();
-				slicedPo_normE->Sumw2();
-			}
+			/* if(energy==0 && radius==0){ */
+			/* 	slicedBi_normE->Sumw2(); */
+			/* 	slicedPo_normE->Sumw2(); */
+			/* } */
 			norm = slicedBi_normE->GetEntries();
 			slicedBi_normE->Scale(1/norm);
 			norm = slicedPo_normE->GetEntries();

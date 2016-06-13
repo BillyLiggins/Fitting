@@ -379,8 +379,8 @@ return output;
 void window(string path,string name){
 	
 	TH1D * scaleHist= new TH1D("scaleHist","",100,0,1);
-	//vector<string> poFileList= glob("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Po210/root/","SolarPo210");
-	vector<string> poFileList= glob(path,name);
+	vector<string> poFileList= glob("/data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Po210/root/","SolarPo210_r56_s0_p2.root");
+	/* vector<string> poFileList= glob(path,name); */
 	int n=poFileList.size();
 	cout<<n<<endl;
 	double x[n],y[n],ex[n],ey[n];
@@ -436,7 +436,10 @@ void window(string path,string name){
 
 }
 
+void viva(){
 
+	window("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/root/","alpha_");
+}
 
 
 void FindHits(string filename,TH1D * scaleHist ){

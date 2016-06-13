@@ -34,3 +34,5 @@
 *.png
 *.eps
 *.root
+#custom
+*.root
