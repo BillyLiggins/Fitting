@@ -214,10 +214,10 @@ int main(){
 		TH1D *slicedPo_normE = Histrogram_NormE_po->ProjectionZ("slicedPo_normE", Histrogram_NormE_po->GetXaxis()->FindBin(energy_real),Histrogram_NormE_po->GetXaxis()->FindBin(energy_real+0.1),\
 			       	Histrogram_NormE_po->GetYaxis()->FindBin(radius),Histrogram_NormE_po->GetYaxis()->FindBin(radius+1000));
 		/* TH1::SetDefaultSumw2(false); */
-		 slicedBi_deltaE->SetDefaultSumw2(true);
-		 slicedPo_deltaE->SetDefaultSumw2(true);
-		 slicedBi_normE->SetDefaultSumw2(true);
-		 slicedPo_normE->SetDefaultSumw2(true);
+		 // slicedBi_deltaE->SetDefaultSumw2(true);
+		 // slicedPo_deltaE->SetDefaultSumw2(true);
+		 // slicedBi_normE->SetDefaultSumw2(true);
+		 // slicedPo_normE->SetDefaultSumw2(true);
 
 		bool first=true;
 		/* if(energy==0 && radius==0){ */
@@ -228,10 +228,10 @@ int main(){
 		if(slicedBi_normE->GetEntries()>200 && slicedPo_normE->GetEntries()>200  ){	
 
 
-			Double_t norm =slicedBi_deltaE ->GetEntries();
-			slicedBi_deltaE ->Scale(1/norm);
-			norm = slicedPo_deltaE->GetEntries();
-			slicedPo_deltaE->Scale(1/norm);
+			// Double_t norm =slicedBi_deltaE ->GetEntries();
+			// slicedBi_deltaE ->Scale(1/norm);
+			// norm = slicedPo_deltaE->GetEntries();
+			// slicedPo_deltaE->Scale(1/norm);
 
 			slicedBi_deltaE ->Fit("gaus");
 			slicedPo_deltaE->Fit("gaus");
@@ -284,10 +284,11 @@ int main(){
 			/* 	slicedBi_normE->Sumw2(); */
 			/* 	slicedPo_normE->Sumw2(); */
 			/* } */
-			norm = slicedBi_normE->GetEntries();
-			slicedBi_normE->Scale(1/norm);
-			norm = slicedPo_normE->GetEntries();
-			slicedPo_normE->Scale(1/norm);
+
+			// norm = slicedBi_normE->GetEntries();
+			// slicedBi_normE->Scale(1/norm);
+			// norm = slicedPo_normE->GetEntries();
+			// slicedPo_normE->Scale(1/norm);
 
 			slicedBi_normE->Fit("gaus");
 			slicedPo_normE->Fit("gaus");
@@ -395,7 +396,7 @@ delete slicedPo_normE ;
         mg_RMS->Add(gr_RMS_po);
 
 
-	mg_RMS->Draw("a*");
+	mg_RMS->Draw("a.");
 //        mg_res->GetXaxis()->SetRangeUser(0.0,3.5);
 //        mg_res->GetYaxis()->SetRangeUser(0.0,0.12);
 	string titleStr= ("#Delta E RMS across energy {"+SSTR(radius)+"<< mcPosr << "+SSTR(radius+1000)+" }").c_str();
@@ -422,6 +423,7 @@ delete slicedPo_normE ;
 	gr_NormE_RMS_bi->SetFillColor(kBlue);
         mg_NormE_RMS->Add(gr_NormE_RMS_bi);
 
+			//
         TGraphErrors * gr_NormE_RMS_po =new TGraphErrors(n,E,NormE_po_RMS,error_E,NormE_RMS_po_error);
 	gr_NormE_RMS_po ->SetMarkerColor(kRed);
 	gr_NormE_RMS_po->SetLineColor(kRed);
@@ -429,7 +431,7 @@ delete slicedPo_normE ;
         mg_NormE_RMS->Add(gr_NormE_RMS_po);
 
 
-	mg_NormE_RMS->Draw("a*");
+	mg_NormE_RMS->Draw("a.");
 //        mg_res->GetXaxis()->SetRangeUser(0.0,3.5);
 //        mg_res->GetYaxis()->SetRangeUser(0.0,0.12);
 	titleStr= ("#Delta E/E_{MC} RMS across energy {"+SSTR(radius)+"<< mcPosr << "+SSTR(radius+1000)+" }").c_str();

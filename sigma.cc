@@ -242,12 +242,12 @@ int main(){
 		if(slicedBi_normE->GetEntries()>200 && slicedPo_normE->GetEntries()>200  ){	
 
 
-			slicedBi_deltaE ->Sumw2();
-			slicedPo_deltaE->Sumw2();
-			Double_t norm =slicedBi_deltaE ->GetEntries();
-			slicedBi_deltaE ->Scale(1/norm);
-			norm = slicedPo_deltaE->GetEntries();
-			slicedPo_deltaE->Scale(1/norm);
+			// slicedBi_deltaE ->Sumw2();
+			// slicedPo_deltaE->Sumw2();
+			// Double_t norm =slicedBi_deltaE ->GetEntries();
+			// slicedBi_deltaE ->Scale(1/norm);
+			// norm = slicedPo_deltaE->GetEntries();
+			// slicedPo_deltaE->Scale(1/norm);
 
 			slicedBi_deltaE ->Fit("gaus");
 			slicedPo_deltaE->Fit("gaus");
@@ -257,7 +257,7 @@ int main(){
 			fit1->SetLineColor(kBlack);
 			fit2->SetLineColor(kBlack);
 
-			if (false){
+			if (true){
 				slicedBi_deltaE ->GetXaxis()->SetTitle("#Delta E");
 				slicedPo_deltaE->GetXaxis()->SetTitle("#Delta E");
 				slicedBi_deltaE ->SetTitle(("deltaE_bi_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
@@ -294,12 +294,12 @@ int main(){
 
 
 
-			slicedBi_normE->Sumw2();
-			slicedPo_normE->Sumw2();
-			norm = slicedBi_normE->GetEntries();
-			slicedBi_normE->Scale(1/norm);
-			norm = slicedPo_normE->GetEntries();
-			slicedPo_normE->Scale(1/norm);
+			// slicedBi_normE->Sumw2();
+			// slicedPo_normE->Sumw2();
+			// norm = slicedBi_normE->GetEntries();
+			// slicedBi_normE->Scale(1/norm);
+			// norm = slicedPo_normE->GetEntries();
+			// slicedPo_normE->Scale(1/norm);
 
 			slicedBi_normE->Fit("gaus");
 			slicedPo_normE->Fit("gaus");
@@ -309,7 +309,7 @@ int main(){
 			fit1->SetLineColor(kBlack);
 			fit2->SetLineColor(kBlack);
 
-			if (false){
+			if (true){
 				slicedBi_normE->GetXaxis()->SetTitle("#Delta E");
 				slicedPo_normE->GetXaxis()->SetTitle("#Delta E/E_{MC}");
 				slicedBi_normE->SetTitle(("NormE_bi_"+SSTR(energy_real)+" < E <"+SSTR(energy_real+0.1)+" MeV").c_str());
@@ -400,7 +400,7 @@ int main(){
         mg_RMS->Add(gr_RMS_po);
 
 
-	mg_RMS->Draw("a*");
+	mg_RMS->Draw("a.");
 //        mg_res->GetXaxis()->SetRangeUser(0.0,3.5);
 //        mg_res->GetYaxis()->SetRangeUser(0.0,0.12);
 	mg_RMS->SetTitle("#Delta E RMS across energy");
@@ -433,7 +433,7 @@ int main(){
         mg_NormE_RMS->Add(gr_NormE_RMS_po);
 
 
-	mg_NormE_RMS->Draw("a*");
+	mg_NormE_RMS->Draw("a.");
 //        mg_res->GetXaxis()->SetRangeUser(0.0,3.5);
 //        mg_res->GetYaxis()->SetRangeUser(0.0,0.12);
 	mg_NormE_RMS->SetTitle("#Delta E/E_{MC} RMS across energy");
