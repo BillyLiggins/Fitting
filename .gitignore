@@ -36,3 +36,7 @@
 *.root
 #custom
 *.root
+
+#Folders
+alphaSims/
+ntuples/
