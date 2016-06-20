@@ -40,7 +40,7 @@
  */
 /*Function signitures*/
 void all(string path,string name);
-
+void FillHist(TFile* file,TH2D * hist);
 
 
 
@@ -459,6 +459,7 @@ void all(){
 
 
 void plotsForWriteUp(){
+				{
   TFile* inputFile = new TFile("scales.root");
   inputFile->ls();
   // TH1D* Po210 = dynamic_cast<TH1D*>(inputFile->Get("scaleHist;1"));
@@ -472,17 +473,104 @@ void plotsForWriteUp(){
   TH1D* Be7 =(TH1D*)inputFile->FindObjectAny("scaleHist;4");
   TH1D* Pep =(TH1D*)inputFile->FindObjectAny("scaleHist;5");
 
-	TH1D* hblank = new TH1D("hblank","",100,0.5,1);
+  Po210->Scale(1/Po210->GetEntries()); 
+  Po212->Scale(1/Po212->GetEntries()); 
+  Po214->Scale(1/Po214->GetEntries()); 
+  Be7->Scale(1/Be7->GetEntries()); 
+  Pep->Scale(1/Pep->GetEntries()); 
+	
+
+	TH1D* hblank = new TH1D("hblank","",100,0.,1);
+	TH1D* halphas = new TH1D("halphas","",100,0.,1);
+	TH1D* hbetas = new TH1D("hbetas","",100,0.,1);
+	TCanvas * c1= new TCanvas();
+	c1->SetGrid(kTRUE);
 
 	gStyle->SetOptStat(kFALSE);
 	hblank->SetMaximum(0.3);
+	hblank->GetXaxis()->SetRangeUser(0.6,1);
+	hblank->SetTitle("Fraction of nhits in 1^{ st } window");
+	hblank->GetXaxis()->SetTitle("Fraction of nhits in 1^{st} window");
 	hblank->Draw();
-	Po210->SetFillColorAlpha(kBlue,0.1);
-	Po210->DrawNormalized("same");
-	Po212->SetFillColorAlpha(kRed,0.1);
-	Po212->DrawNormalized("same");
-	Po214->SetFillColorAlpha(kGreen,0.1);
-	Po214->DrawNormalized("same");
-	Be7->DrawNormalized("same");
-	Pep->DrawNormalized("same");
+	halphas->Add(Po210,1);
+	halphas->Add(Po212,1);
+	halphas->Add(Po214,1);
+	halphas->SetFillColorAlpha(kBlue,0.1);
+	halphas->DrawNormalized("same");
+	hbetas->Add(Be7,1);
+	hbetas->Add(Pep,1);
+	hbetas->SetFillColorAlpha(kRed,0.1);
+	hbetas->DrawNormalized("same");
+
+	TLegend* leg= new TLegend(0.1,0.5,0.4,0.9);
+	c1->SetGrid(kTRUE);
+	leg->AddEntry(halphas,"Po210, Po212 & Po214","f");
+	leg->AddEntry(hbetas,"Be7 & pep","f");
+	leg->Draw();
+	c1->Print("numberOfNhitsInFirstWindow.png");
 }
+	
+
+	TH2D * hEnergy= new TH2D("hEnergy","",100,0,2.5,100,-1,1);
+	vector<string> poFileList= glob("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple/","alpha_");
+
+	for( int i=0; i<poFileList.size(); i++ ){
+		TFile * file= TFile::Open(poFileList[i].c_str());	
+		FillHist( file, hEnergy);
+		file->Close();
+	  }
+// Plotting things
+	{
+	TCanvas* c1= new TCanvas();
+	c1->cd();
+	c1->SetRightMargin(1);
+	c1->SetGrid(kTRUE);
+	gStyle->SetOptStat(kFALSE);
+	hEnergy->SetTitle("#frac{E_{MC}-E_{reco}}{E_{MC}} across alpha energy");	
+	hEnergy->GetXaxis()->SetTitle("Alpha energy (MeV)");	
+	// TAxis * xAxis=   scaleHist->GetXaxis();
+	// TAxis * yAxis=    scaleHist->GetYaxis();
+	//McVsZ->Draw("surf1");
+	hEnergy->Draw("contz0");
+	c1->Print("energyDiffOverEnergy.png");
+	// c1->Print("test.eps");
+	
+	}
+}
+
+void FillHist(TFile* file,TH2D * hist){
+
+				TTree* Tree = (TTree*) file->Get("output");
+				Double_t para, mcEdepQuenched,energy,posr;
+				Bool_t  Qfit;
+				Int_t pdg1, pdg2, evIndex;
+				Int_t parentpdg1,parentpdg2;
+
+				Tree->SetBranchAddress("pdg1",&pdg1);
+				Tree->SetBranchAddress("pdg2",&pdg2);
+				Tree->SetBranchAddress("parentpdg1",&parentpdg1);
+				Tree->SetBranchAddress("parentpdg2",&parentpdg2);
+
+				Tree->SetBranchAddress("berkeleyAlphaBeta",&para);
+				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
+				Tree->SetBranchAddress("energy",&energy);
+				Tree->SetBranchAddress("posr",&posr);
+				Tree->SetBranchAddress("fitValid",&Qfit);
+				Tree->SetBranchAddress("evIndex",&evIndex);
+				Int_t n = (Int_t)Tree->GetEntries();
+				Int_t code;
+
+				for( Int_t i =0;i<n;i++){
+								Tree->GetEntry(i);
+
+								if( Qfit && evIndex==0 && posr<6000 && energy>0.1){
+												hist->Fill(energy,(mcEdepQuenched-energy)/mcEdepQuenched);
+												// hist->Fill(energy,mcEdepQuenched);
+								}
+								}
+
+				}
+
+
+
+
