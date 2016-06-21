@@ -508,6 +508,7 @@ void plotsForWriteUp(){
 	leg->AddEntry(hbetas,"Be7 & pep","f");
 	leg->Draw();
 	c1->Print("numberOfNhitsInFirstWindow.png");
+	c1->Print("numberOfNhitsInFirstWindow.tex");
 }
 	
 
@@ -533,6 +534,9 @@ void plotsForWriteUp(){
 	//McVsZ->Draw("surf1");
 	hEnergy->Draw("contz0");
 	c1->Print("energyDiffOverEnergy.png");
+	c1->Print("energyDiffOverEnergy.tex");
+	c1->SaveAs("something.tex");
+	c1->SaveAs("something.C");
 	// c1->Print("test.eps");
 	
 	}

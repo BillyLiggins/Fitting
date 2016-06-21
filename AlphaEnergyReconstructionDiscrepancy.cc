@@ -153,11 +153,11 @@ void AlphaEnergyReconstructionDiscrepancy(){
 
 	{
 		TCanvas * c1 = new TCanvas();
-		
+		c1->SetGrid();
 		gStyle->SetOptStat(false);
 		MC->SetFillColorAlpha(kGreen,0.1);
 		RE->SetFillColorAlpha(kRed,0.1);
-		MC->SetTitle("MC and Reconstruction energy of Po212 #alphas");
+		MC->SetTitle("MC and Reconstruction energy of Po212");
 		MC->GetXaxis()->SetTitle("Energy (MeV)");
 		MC->GetYaxis()->SetTitle("Counts/0.02 MeV bin");
 		MC->Draw();
@@ -167,9 +167,11 @@ void AlphaEnergyReconstructionDiscrepancy(){
 		leg->AddEntry(RE,"RECON","f");
 		leg->Draw();
 		c1->Print("EnergyComparsion.png");
+		c1->Print("EnergyComparsion.tex");
 	}
 	{
 		TCanvas * c1 = new TCanvas();
+		c1->SetGrid();
 		
 		gStyle->SetOptStat(false);
 		// DIF->SetFillColorAlpha(kGreen,0.1);
@@ -183,6 +185,7 @@ void AlphaEnergyReconstructionDiscrepancy(){
 		// leg->AddEntry(RE,"RECON","f");
 		// leg->Draw();
 		c1->Print("EnergyDifference.png");
+		c1->Print("EnergyDifference.tex");
 	}
 
 }
