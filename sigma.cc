@@ -429,12 +429,14 @@ void FillHist(string filename,TH2D* hDeltaE, TH2D * hNormE){
 								NormRMSCan->cd();
 								TGraphErrors * gr_NormE_RMS_bi =new TGraphErrors(n,E,NormE_bi_RMS,error_E,NormE_RMS_bi_error);
 								gr_NormE_RMS_bi ->SetMarkerColor(kBlue);
+								gr_NormE_RMS_bi ->SetMarkerStyle(2);
 								gr_NormE_RMS_bi->SetLineColor(kBlue);
 								gr_NormE_RMS_bi->SetFillColor(kBlue);
 								mg_NormE_RMS->Add(gr_NormE_RMS_bi);
 
 								TGraphErrors * gr_NormE_RMS_po =new TGraphErrors(n,E,NormE_po_RMS,error_E,NormE_RMS_po_error);
 								gr_NormE_RMS_po ->SetMarkerColor(kRed);
+								gr_NormE_RMS_po ->SetMarkerStyle(3);
 								gr_NormE_RMS_po->SetLineColor(kRed);
 								gr_NormE_RMS_po->SetFillColor(kRed);
 								mg_NormE_RMS->Add(gr_NormE_RMS_po);
@@ -443,9 +445,9 @@ void FillHist(string filename,TH2D* hDeltaE, TH2D * hNormE){
 								mg_NormE_RMS->Draw("a.");
 								//        mg_res->GetXaxis()->SetRangeUser(0.0,3.5);
 								//        mg_res->GetYaxis()->SetRangeUser(0.0,0.12);
-								mg_NormE_RMS->SetTitle("#Delta E/E_{MC} RMS across energy");
+								mg_NormE_RMS->SetTitle("#frac{E_{MC}-E_{reco}}{E_{MC}} RMS across energy");
 								mg_NormE_RMS->GetXaxis()->SetTitle("Energy MC (MeV)");
-								mg_NormE_RMS->GetYaxis()->SetTitle("#Delta E/E_{MC} RMS");
+								mg_NormE_RMS->GetYaxis()->SetTitle("(E_{MC}-E_{reco})/E_{MC} RMS");
 
 								TLegend * NormE_RMSLeg = new TLegend(0.7,0.7,0.9,0.9);
 								NormE_RMSLeg->AddEntry(gr_NormE_RMS_bi,"Beta","f");
