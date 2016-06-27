@@ -476,6 +476,7 @@ void FillHist(string filename,TH2D* hDeltaE, TH2D * hNormE){
 								// graph->SetTitle("Fracti");
 								graph->GetXaxis()->SetTitle("Energy (MeV)");
 								// graph->GetXaxis()->SetTitle("Energy (MeV)");
+								graph->SetMaximum(0.12);
 								graph->Draw("ap");
 
 								c1->SaveAs("sigma_error.png");
